@@ -9,32 +9,27 @@ import huglife.Occupant;
 import huglife.Impassible;
 import huglife.Empty;
 
-/** Tests the plip class
- *  @authr FIXME
- */
-
-public class TestPlip {
-
+public class TestClorus {
     @Test
     public void testBasics() {
-        Plip p = new Plip(2);
-        assertEquals(2, p.energy(), 0.01);
-        assertEquals(new Color(99, 255, 76), p.color());
+        Clorus p = new Clorus(0.05);
+        assertEquals(0.05, p.energy(), 0.01);
+        assertEquals(new Color(34, 0, 231), p.color());
         p.move();
-        assertEquals(1.85, p.energy(), 0.01);
+        assertEquals(0.02, p.energy(), 0.01);
         p.move();
-        assertEquals(1.70, p.energy(), 0.01);
+        assertEquals(0., p.energy(), 0.01);
         p.stay();
-        assertEquals(1.90, p.energy(), 0.01);
+        assertEquals(0., p.energy(), 0.01);
         p.stay();
-        assertEquals(2.00, p.energy(), 0.01);
+        assertEquals(0., p.energy(), 0.01);
     }
 
     @Test
     public void testReplicate() {
         // TODO
-        Plip p = new Plip(2);
-        Plip p_offspring = p.replicate();
+        Clorus p = new Clorus(2);
+        Clorus p_offspring = p.replicate();
         assertEquals(1., p.energy(), 0.01);
         assertEquals(1., p_offspring.energy(), 0.01);
         assertNotEquals(p, p_offspring);
@@ -44,65 +39,71 @@ public class TestPlip {
     public void testChoose() {
 
         // No empty adjacent spaces; stay.
-        Plip p = new Plip(1.2);
+        Clorus c = new Clorus(1.2);
         HashMap<Direction, Occupant> surrounded = new HashMap<Direction, Occupant>();
         surrounded.put(Direction.TOP, new Impassible());
         surrounded.put(Direction.BOTTOM, new Impassible());
         surrounded.put(Direction.LEFT, new Impassible());
         surrounded.put(Direction.RIGHT, new Impassible());
 
-        Action actual = p.chooseAction(surrounded);
+        Action actual = c.chooseAction(surrounded);
         Action expected = new Action(Action.ActionType.STAY);
 
         assertEquals(expected, actual);
 
 
         // Energy >= 1; replicate towards an empty space.
-        p = new Plip(1.2);
+        c = new Clorus(1.2);
         HashMap<Direction, Occupant> topEmpty = new HashMap<Direction, Occupant>();
         topEmpty.put(Direction.TOP, new Empty());
         topEmpty.put(Direction.BOTTOM, new Impassible());
         topEmpty.put(Direction.LEFT, new Impassible());
         topEmpty.put(Direction.RIGHT, new Impassible());
 
-        actual = p.chooseAction(topEmpty);
+        actual = c.chooseAction(topEmpty);
         expected = new Action(Action.ActionType.REPLICATE, Direction.TOP);
 
         assertEquals(expected, actual);
 
 
         // Energy >= 1; replicate towards an empty space.
-        p = new Plip(1.2);
+        c = new Clorus(1.2);
         HashMap<Direction, Occupant> allEmpty = new HashMap<Direction, Occupant>();
         allEmpty.put(Direction.TOP, new Empty());
         allEmpty.put(Direction.BOTTOM, new Empty());
         allEmpty.put(Direction.LEFT, new Empty());
         allEmpty.put(Direction.RIGHT, new Empty());
 
-        actual = p.chooseAction(allEmpty);
+        actual = c.chooseAction(allEmpty);
         Action unexpected = new Action(Action.ActionType.STAY);
 
         assertNotEquals(unexpected, actual);
 
 
         // Energy < 1; stay.
-        p = new Plip(.99);
+        c = new Clorus(.99);
 
-        actual = p.chooseAction(allEmpty);
-        expected = new Action(Action.ActionType.STAY);
+        actual = c.chooseAction(allEmpty);
+        unexpected = new Action(Action.ActionType.STAY);
+
+        assertNotEquals(unexpected, actual);
+
+
+        // Rule 2.
+        c = new Clorus(1.);
+        Plip p = new Plip(1.2);
+        surrounded = new HashMap<Direction, Occupant>();
+        surrounded.put(Direction.TOP, p);
+        surrounded.put(Direction.BOTTOM, new Empty());
+        surrounded.put(Direction.LEFT, new Impassible());
+        surrounded.put(Direction.RIGHT, new Impassible());
+
+        actual = c.chooseAction(surrounded);
+        expected = new Action(Action.ActionType.ATTACK, Direction.TOP);
 
         assertEquals(expected, actual);
 
+        // Rule 3.
 
-        // Energy < 1; stay.
-        p = new Plip(.99);
-
-        actual = p.chooseAction(topEmpty);
-        expected = new Action(Action.ActionType.STAY);
-
-        assertEquals(expected, actual);
-
-
-        // We don't have Cloruses yet, so we can't test behavior for when they are nearby right now.
     }
 }

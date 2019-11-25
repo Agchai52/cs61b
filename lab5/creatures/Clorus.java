@@ -1,5 +1,4 @@
 package creatures;
-
 import huglife.*;
 
 import java.awt.Color;
@@ -7,13 +6,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
 
-/**
- * An implementation of a motile pacifist photosynthesizer.
- *
- * @author Josh Hug
- */
-public class Plip extends Creature {
-
+public class Clorus extends Creature{
     /**
      * red color.
      */
@@ -38,41 +31,34 @@ public class Plip extends Creature {
     /**
      * creates plip with energy equal to E.
      */
-    public Plip(double e) {
-        super("plip");
-        r = 99;
-        g = 63;
-        b = 76;
+    public Clorus(double e) {
+        super("clorus");
+        r = 34;
+        g = 0;
+        b = 231;
         energy = e;
     }
 
     /**
      * creates a plip with energy equal to 1.
      */
-    public Plip() {
+    public Clorus() {
         this(1);
     }
 
     /**
-     * Should return a color with red = 99, blue = 76, and green that varies
-     * linearly based on the energy of the Plip. If the plip has zero energy,
-     * it should have a green value of 63. If it has max energy, it should
-     * have a green value of 255. The green value should vary with energy
-     * linearly in between these two extremes. It's not absolutely vital
-     * that you get this exactly correct.
+     * Should return a color with red = 34, blue = 0, and green = 231
      */
     public Color color() {
-        g = 63 + (int) (96 * energy);
-        g = Math.max(63, g);
-        g = Math.min(255, g);
         return color(r, g, b);
     }
 
     /**
-     * Do nothing with C, Plips are pacifists.
+     * Attack Plip
      */
     public void attack(Creature c) {
         // do nothing.
+        energy += c.energy();
     }
 
     /**
@@ -82,8 +68,8 @@ public class Plip extends Creature {
      */
     public void move() {
         // TODO
-        energy -= 0.15;
-        if (energy < 0.) {
+        energy -= 0.03;
+        if (energy <= 0.) {
             energy = 0.;
         }
     }
@@ -94,25 +80,25 @@ public class Plip extends Creature {
      */
     public void stay() {
         // TODO
-        energy += 0.2;
-        if (energy > 2.) {
-            energy = 2.;
+        energy -= 0.01;
+        if (energy <= 0.) {
+            energy = 0.;
         }
     }
 
     /**
-     * Plips and their offspring each get 50% of the energy, with none
+     * Clorus and their offspring each get 50% of the energy, with none
      * lost to the process. Now that's efficiency! Returns a baby
      * Plip.
      */
-    public Plip replicate() {
+    public Clorus replicate() {
         energy = energy * repEnergyRetained;
         double babyEnergy = energy;
-        return new Plip(babyEnergy);
+        return new Clorus(babyEnergy);
     }
 
     /**
-     * Plips take exactly the following actions based on NEIGHBORS:
+     * Clorus take exactly the following actions based on NEIGHBORS:
      * 1. If no empty adjacent spaces, STAY.
      * 2. Otherwise, if energy >= 1, REPLICATE towards an empty direction
      * chosen at random.
@@ -127,7 +113,7 @@ public class Plip extends Creature {
     public Action chooseAction(Map<Direction, Occupant> neighbors) {
         // Rule 1
         Deque<Direction> emptyNeighbors = new ArrayDeque<>();
-        boolean anyClorus = false;
+        Deque<Direction> plipNeighbors = new ArrayDeque<>();
         // TODO
         // (Google: Enhanced for-loop over keys of NEIGHBORS?)
         // for () {...}
@@ -135,39 +121,48 @@ public class Plip extends Creature {
             Occupant o = neighbors.get(dir);
             if (o.name().equals("empty")){
                 emptyNeighbors.add(dir);
-            }
-            if (o.name().equals("clorus")) {
-                anyClorus = true;
+            } else if (o.name().equals("plip")) {
+                plipNeighbors.add(dir);
             }
         }
 
-        if (emptyNeighbors.size() == 0) { // FIXME
+        if (emptyNeighbors.size() == 0 && plipNeighbors.size() == 0) { // FIXME
             // TODO
             stay();
             return new Action(Action.ActionType.STAY);
         }
 
+
         // Rule 2
+        if (plipNeighbors.size() > 0) {
+
+            Direction dir_poss = HugLifeUtils.randomEntry(plipNeighbors);
+            Creature p = (Creature) neighbors.get(dir_poss);
+            attack(p);
+            return new Action(Action.ActionType.ATTACK, dir_poss);
+
+            }
+
+        // Rule 3
         // HINT: randomEntry(emptyNeighbors)
-        if (energy >= 1.0) {
-            Plip p_replicate = replicate();
+        if (energy >= 1.) {
+            Clorus c_re = replicate();
             Direction dir_poss = HugLifeUtils.randomEntry(emptyNeighbors);
             return new Action(Action.ActionType.REPLICATE, dir_poss);
         }
 
-        // Rule 3
-        if (anyClorus) {
-            int i = HugLifeUtils.randomInt(0, 1);
-            if (i == 1) {
-                move();
-                Direction dir_poss = HugLifeUtils.randomEntry(emptyNeighbors);
-                return new Action(Action.ActionType.MOVE, dir_poss);
-
-            }
-        }
 
         // Rule 4
+        if (emptyNeighbors.size() > 0) {
+            Direction dir_poss = HugLifeUtils.randomEntry(emptyNeighbors);
+            move();
+            return new Action(Action.ActionType.MOVE, dir_poss);
+        }
+
         stay();
         return new Action(Action.ActionType.STAY);
+
     }
 }
+
+
