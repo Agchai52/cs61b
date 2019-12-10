@@ -22,7 +22,8 @@ public class TestMyHashMap {
     @Test
     public void sanityClearTest() {
         MyHashMap<String, Integer> b = new MyHashMap<String, Integer>();
-        for (int i = 0; i < 455; i++) {
+        for (int i = 0; i < 17; i++) {
+            System.out.println(i);
             b.put("hi" + i, 1);
             //make sure put is working via containsKey and get
             assertTrue(null != b.get("hi" + i)
